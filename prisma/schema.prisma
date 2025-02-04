@@ -25,6 +25,8 @@ model User {
   educationDetails  EducationDetails?
   workExperience    WorkExperience[]
   companyDetails    CompanyDetails?
+  paperAttempts     UserAttempt[]
+  paperAnswers      UserAnswer[]
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
 }
@@ -136,37 +138,61 @@ model SocialLink {
   userId String? @db.Uuid
 }
 
-model test {
-  id        String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  title     String
-  questions question[]
-  result    result     @relation(fields: [resultId], references: [id])
-  resultId  String     @db.Uuid
+model Paper {
+  id          String        @id @default(uuid())
+  title       String
+  questions   Question[]
+  company     String?
+  approve     Boolean?      @default(true)
+  createdAt   DateTime      @default(now())
+  userAttempt UserAttempt[]
 }
 
-model question {
-  id         String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  que        String
-  difficulty questionDifficulty
-  tags       String[]
-  timeLimit  String
-  marks      Int
-  test       test?              @relation(fields: [testId], references: [id])
-  testId     String?            @db.Uuid
+model Question {
+  id         String              @id @default(uuid())
+  text       String
+  difficulty QUESTION_DIFFICULTY
+  paperId    String
+  paper      Paper               @relation(fields: [paperId], references: [id])
+  options    Option[]
+  correctId  String
+  createdAt  DateTime            @default(now())
+  userAnswer UserAnswer[]
 }
 
-enum questionDifficulty {
+model Option {
+  id         String       @id @default(uuid())
+  text       String
+  questionId String
+  question   Question     @relation(fields: [questionId], references: [id])
+  UserAnswer UserAnswer[]
+}
+
+model UserAttempt {
+  id        String   @id @default(uuid())
+  userId    String
+  paperId   String
+  user      User     @relation(fields: [userId], references: [id])
+  paper     Paper    @relation(fields: [paperId], references: [id])
+  score     Int
+  createdAt DateTime @default(now())
+}
+
+model UserAnswer {
+  id         String   @id @default(uuid())
+  userId     String
+  questionId String
+  optionId   String
+  user       User     @relation(fields: [userId], references: [id])
+  question   Question @relation(fields: [questionId], references: [id])
+  option     Option   @relation(fields: [optionId], references: [id])
+  createdAt  DateTime @default(now())
+}
+
+enum QUESTION_DIFFICULTY {
   BEGINNER
   INTERMEDIATE
   ADVANCE
-}
-
-model result {
-  id            String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  status        testResult
-  obtainedMarks Int
-  totalMarks    Int
-  test          test[]
 }
 
 enum testResult {
