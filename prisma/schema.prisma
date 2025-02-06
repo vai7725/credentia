@@ -29,6 +29,8 @@ model User {
   paperAnswers      UserAnswer[]
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
+  JobPost           JobPost[]
+  Application       Application[]
 }
 
 model EducationDetails {
@@ -198,4 +200,36 @@ enum QUESTION_DIFFICULTY {
 enum testResult {
   PASS
   FAIL
+}
+
+model JobPost {
+  id           String        @id @default(uuid())
+  title        String
+  description  String
+  company      String
+  location     String?
+  salary       Int?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  userId       String
+  user         User          @relation(fields: [userId], references: [id])
+  applications Application[]
+}
+
+model Application {
+  id        String             @id @default(uuid())
+  jobPostId String
+  jobPost   JobPost            @relation(fields: [jobPostId], references: [id])
+  userId    String
+  user      User               @relation(fields: [userId], references: [id])
+  status    APPLICATION_STATUS @default(PENDING)
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+}
+
+enum APPLICATION_STATUS {
+  PENDING
+  REVIEWED
+  ACCEPTED
+  REJECTED
 }
