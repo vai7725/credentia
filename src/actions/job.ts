@@ -70,9 +70,9 @@ export const createJob = async (data: JobPostProps) => {
     if (userData.role == USER_ROLE.ADMIN || USER_ROLE.COMPANY) {
       await client.jobPost.create({
         data: {
-          title: data.title,
-          description: data.description,
-          company: data.company,
+          title: data.title!,
+          description: data.description!,
+          company: data.company!,
           location: data.location,
           salary: data.salary,
         },

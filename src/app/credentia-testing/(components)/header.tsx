@@ -11,7 +11,7 @@ export default function Header({}: Props) {
       <Container className="grid grid-cols-12 h-[80px]">
         <div className="col-span-6 sm:col-span-9 flex justify-center items-start flex-col">
           <div>Test title</div>
-          <div>Question 22/30</div>
+          <div>Question 1/30</div>
         </div>
         <div className="col-span-6 sm:col-span-3 flex justify-between items-center">
           <Button className="w-1/2 mx-1">
