@@ -2,8 +2,6 @@
 import { client } from '@/lib/prisma';
 import { currentUser } from '@clerk/nextjs/server';
 import { USER_ROLE } from '@prisma/client';
-import { stat } from 'fs';
-import { text } from 'stream/consumers';
 
 export const getAllQuestions = async (id: string) => {
   try {
