@@ -8,32 +8,80 @@ datasource db {
 }
 
 model User {
-  id                String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  email             String       @unique
+  id                String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   firstname         String?
   lastname          String?
+  email             String            @unique
+  phone             String?
   userImage         String?
-  status            USER_STATUS  @default(ACTIVE)
-  role              USER_ROLE    @default(USER)
-  clerkid           String       @unique
-  isProfileComplete Boolean      @default(false)
-  activePage        String
-  socialLinks       socialLink[]
-  createdAt         DateTime     @default(now())
-  updatedAt         DateTime     @updatedAt
+  status            USER_STATUS       @default(INACTIVE)
+  role              USER_ROLE?        @default(NULL)
+  clerkid           String            @unique
+  isProfileComplete Boolean           @default(false)
+  activePage        Int               @default(0)
+  skills            String[]
+  yearsOfExperience String?
+  socialLinks       SocialLink[]
+  educationDetails  EducationDetails?
+  workExperience    WorkExperience[]
+  companyDetails    CompanyDetails?
+  paperAttempts     UserAttempt[]
+  paperAnswers      UserAnswer[]
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  JobPost           JobPost[]
+  Application       Application[]
 }
 
-model otherUserInfo {
-  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  givenTest test[]
-  skills    String[]
-  // job information will be added later
+model EducationDetails {
+  id             String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  highestDegree  HIGHEST_DEGREE?
+  fieldOfStudy   String?
+  graduationYear String?
+  user           User?           @relation(fields: [userId], references: [id])
+  userId         String?         @unique @db.Uuid
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+}
+
+model WorkExperience {
+  id                  String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  company             String?
+  jobTitle            String?
+  startDate           DateTime?
+  endDate             DateTime?
+  workDuration        String?
+  keyResponsibilities String?
+  user                User      @relation(fields: [userId], references: [id])
+  userId              String    @db.Uuid
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+}
+
+model CompanyDetails {
+  id                      String                 @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  companyName             String?
+  companyDescription      String?
+  industry                COMPANY_INDUSTRY_TYPE?
+  companySize             String?
+  foundedYear             String?
+  companyAddress          String?
+  companyAddressCity      String?
+  companyAddressCountry   String?
+  companyWebsite          String?
+  companyEmail            String?
+  companyPhone            String?
+  companyMissionStatement String?
+  companyCoreValues       String?
+  user                    User?                  @relation(fields: [userId], references: [id])
+  userId                  String?                @unique @db.Uuid
 }
 
 enum USER_ROLE {
-  USER
+  CANDIDATE
   ADMIN
   COMPANY
+  NULL
 }
 
 enum USER_STATUS {
@@ -43,7 +91,48 @@ enum USER_STATUS {
   DELETED
 }
 
-model socialLink {
+enum HIGHEST_DEGREE {
+  HIGH_SCHOOL
+  ASSOCIATE
+  BACHELOR
+  MASTER
+  DOCTORATE
+  POST_DOCTORATE
+  DIPLOMA
+  CERTIFICATE
+  OTHER
+}
+
+enum COMPANY_INDUSTRY_TYPE {
+  SOFTWARE_DEVELOPMENT
+  IT_SERVICES
+  AI_ML
+  CLOUD_COMPUTING_DEVOPS
+  CYBERSECURITY
+  DATA_SCIENCE_ANALYTICS
+  MOBILE_APP_DEVELOPMENT
+  WEB_DEVELOPMENT
+  ECOMMERCE_RETAIL_TECH
+  FINTECH
+  HEALTHTECH
+  EDTECH
+  GAMING_ENTERTAINMENT
+  IOT
+  BLOCKCHAIN_CRYPTOCURRENCY
+  AR_VR
+  AUTOMOTIVE_AUTONOMOUS_VEHICLES
+  AEROSPACE_DEFENSE
+  TELECOMMUNICATIONS
+  ENTERPRISE_SOFTWARE
+  OPEN_SOURCE_DEVELOPER_TOOLS
+  CONSULTING_PROFESSIONAL_SERVICES
+  STARTUPS_INCUBATORS
+  GOVERNMENT_PUBLIC_SECTOR
+  NONPROFIT_SOCIAL_IMPACT
+  OTHER
+}
+
+model SocialLink {
   id     String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   title  String
   link   String
@@ -51,42 +140,96 @@ model socialLink {
   userId String? @db.Uuid
 }
 
-model test {
-  id              String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  title           String
-  questions       question[]
-  result          result         @relation(fields: [resultId], references: [id])
-  resultId        String         @db.Uuid
-  otherUserInfo   otherUserInfo? @relation(fields: [otherUserInfoId], references: [id])
-  otherUserInfoId String?        @db.Uuid
+model Paper {
+  id          String        @id @default(uuid())
+  title       String
+  questions   Question[]
+  company     String?
+  approve     Boolean?      @default(true)
+  createdAt   DateTime      @default(now())
+  userAttempt UserAttempt[]
 }
 
-model question {
-  id         String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  que        String
-  difficulty questionDifficulty
-  tags       String[]
-  timeLimit  String
-  marks      Int
-  test       test?              @relation(fields: [testId], references: [id])
-  testId     String?            @db.Uuid
+model Question {
+  id         String              @id @default(uuid())
+  text       String
+  difficulty QUESTION_DIFFICULTY
+  paperId    String
+  paper      Paper               @relation(fields: [paperId], references: [id])
+  options    Option[]
+  correctId  String
+  createdAt  DateTime            @default(now())
+  userAnswer UserAnswer[]
 }
 
-enum questionDifficulty {
+model Option {
+  id         String       @id @default(uuid())
+  text       String
+  questionId String
+  question   Question     @relation(fields: [questionId], references: [id])
+  UserAnswer UserAnswer[]
+}
+
+model UserAttempt {
+  id        String   @id @default(uuid())
+  userId    String
+  paperId   String
+  user      User     @relation(fields: [userId], references: [id])
+  paper     Paper    @relation(fields: [paperId], references: [id])
+  score     Int
+  createdAt DateTime @default(now())
+}
+
+model UserAnswer {
+  id         String   @id @default(uuid())
+  userId     String
+  questionId String
+  optionId   String
+  user       User     @relation(fields: [userId], references: [id])
+  question   Question @relation(fields: [questionId], references: [id])
+  option     Option   @relation(fields: [optionId], references: [id])
+  createdAt  DateTime @default(now())
+}
+
+enum QUESTION_DIFFICULTY {
   BEGINNER
   INTERMEDIATE
   ADVANCE
 }
 
-model result {
-  id            String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  status        testResult
-  obtainedMarks Int
-  totalMarks    Int
-  test          test[]
-}
-
 enum testResult {
   PASS
   FAIL
+}
+
+model JobPost {
+  id           String        @id @default(uuid())
+  title        String
+  description  String
+  company      String
+  location     String?
+  salary       Int?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  userId       String
+  user         User          @relation(fields: [userId], references: [id])
+  applications Application[]
+}
+
+model Application {
+  id        String             @id @default(uuid())
+  jobPostId String
+  jobPost   JobPost            @relation(fields: [jobPostId], references: [id])
+  userId    String
+  user      User               @relation(fields: [userId], references: [id])
+  status    APPLICATION_STATUS @default(PENDING)
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+}
+
+enum APPLICATION_STATUS {
+  PENDING
+  REVIEWED
+  ACCEPTED
+  REJECTED
 }

@@ -22,7 +22,7 @@ export const onAuthenticateUser = async () => {
     const newUser = await client.user.create({
       data: {
         clerkid: user.id,
-        email: user.emailAddresses[0].emailAddress,
+        email: user.emailAddresses[0]?.emailAddress,
         firstname: user.firstName,
         lastname: user.lastName,
         userImage: user.imageUrl,
