@@ -78,7 +78,7 @@ export default function Navbar({}: Props) {
             <UserButton />
           </SignedIn>
           <SignedOut>
-            <Button>
+            <Button asChild>
               <SignInButton />
             </Button>
           </SignedOut>

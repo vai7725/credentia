@@ -3,6 +3,32 @@ import { client } from '@/lib/prisma';
 import { currentUser } from '@clerk/nextjs/server';
 import { HIGHEST_DEGREE } from '@prisma/client';
 
+export const getCandidateData = async () => {
+  try {
+    const user = await currentUser();
+    if (!user) {
+      return { status: 403, data: 'User not authenticated' };
+    }
+
+    const data = await client.user.findUnique({
+      where: { clerkid: user.id },
+      include: {
+        educationDetails: true,
+        workExperience: true,
+      },
+    });
+
+    if (!data) {
+      return { status: 404, data: 'Candidate data not found' };
+    }
+
+    return { status: 200, data: data };
+  } catch (error) {
+    console.log(error);
+    return { status: 500, data: 'Internal server error' };
+  }
+};
+
 export const saveSetupCandidateData01 = async (data: {
   fullName: string;
   phone: string;

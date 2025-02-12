@@ -15,7 +15,11 @@ const SetupPage = async () => {
     return redirect('/dashboard');
   }
 
-  if (!setup.isProfileComplete && setup.role != 'NULL') {
+  if (
+    !setup.isProfileComplete &&
+    setup.role != 'NULL' &&
+    setup.role != 'ADMIN'
+  ) {
     const url = '/setup/' + setup.role.toLowerCase();
     return redirect(url);
   }

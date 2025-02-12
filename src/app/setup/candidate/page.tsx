@@ -22,12 +22,14 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { redirect, useRouter } from 'next/navigation';
 import {
+  getCandidateData,
   saveSetupCandidateData01,
   saveSetupCandidateData02,
   saveSetupCandidateData03,
   saveSetupCandidateData04,
 } from '@/actions/candidateSetup';
 import { isSetupComplete, resetSetup } from '@/actions/setup';
+import { UsersProps } from '@/types/index.type';
 
 type Step = {
   id: string;
@@ -82,6 +84,7 @@ const CandidatesPage = () => {
   ];
 
   const fetchSetup = async () => {
+    const candidateDataResponse = await getCandidateData();
     const setupData = await isSetupComplete();
     const setup = setupData.data as {
       isProfileComplete: boolean;
@@ -102,6 +105,27 @@ const CandidatesPage = () => {
     }
 
     setCurrentStep(setup.activePage - 1);
+
+    if (candidateDataResponse.status == 200) {
+      const candidateData = candidateDataResponse.data as UsersProps;
+
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        fullName: candidateData?.firstname + candidateData?.lastname || '',
+        email: candidateData?.email || '',
+        phone: candidateData?.phone || '',
+        degree: candidateData?.educationDetails?.highestDegree || '',
+        fieldOfStudy: candidateData?.educationDetails?.fieldOfStudy || '',
+        graduationYear: candidateData?.educationDetails?.graduationYear || '',
+        company: candidateData?.workExperience[0]?.company || '',
+        jobTitle: candidateData?.workExperience[0]?.jobTitle || '',
+        workDuration: candidateData?.workExperience[0]?.workDuration || '',
+        responsibilities:
+          candidateData?.workExperience[0]?.keyResponsibilities || '',
+        skills: candidateData?.skills || [],
+        experience: candidateData?.yearsOfExperience || '1-2',
+      }));
+    }
   };
 
   useEffect(() => {

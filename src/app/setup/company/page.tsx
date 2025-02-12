@@ -21,12 +21,14 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { redirect, useRouter } from 'next/navigation';
 import {
+  getCompanyData,
   saveSetupCompanyData01,
   saveSetupCompanyData02,
   saveSetupCompanyData03,
   saveSetupCompanyData04,
 } from '@/actions/companySetup';
 import { isSetupComplete, resetSetup } from '@/actions/setup';
+import { UsersProps } from '@/types/index.type';
 
 const steps = [
   { id: 'basic-info', title: 'Basic Information' },
@@ -71,6 +73,7 @@ const CompanyPage = () => {
   ];
 
   const fetchSetup = async () => {
+    const companyDataResponse = await getCompanyData();
     const setupData = await isSetupComplete();
     const setup = setupData.data as {
       isProfileComplete: boolean;
@@ -91,6 +94,29 @@ const CompanyPage = () => {
     }
 
     setCurrentStep(setup.activePage - 1);
+
+    if (companyDataResponse.status == 200) {
+      const companyData = companyDataResponse.data as UsersProps;
+
+      const data = companyData?.companyDetails;
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        companyName: data?.companyName || '',
+        industry: data?.industry || '',
+        companySize: data?.companySize || '',
+        foundedYear: data?.foundedYear || '',
+        companyDescription: data?.companyDescription || '',
+        address: data?.companyAddress || '',
+        city: data?.companyAddressCity || '',
+        country: data?.companyAddressCountry || '',
+        website: data?.companyWebsite || '',
+        contactEmail: data?.companyEmail || '',
+        phoneNumber: data?.companyPhone || '',
+        linkedIn: companyData?.socialLinks[0]?.link || '',
+        missionStatement: data?.companyMissionStatement || '',
+        coreValues: data?.companyCoreValues || '',
+      }));
+    }
   };
 
   useEffect(() => {
